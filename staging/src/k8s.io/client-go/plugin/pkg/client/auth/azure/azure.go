@@ -340,8 +340,14 @@ func (ts *azureTokenSource) retrieveTokenFromCfg() (*azureToken, error) {
 
 func (ts *azureTokenSource) storeTokenInCfg(token *azureToken) error {
 	newCfg := make(map[string]string)
+	for key, val := range ts.cfg {
+		newCfg[key] = val
+	}
 	newCfg[cfgAccessToken] = token.token.AccessToken
-	newCfg[cfgRefreshToken] = token.token.RefreshToken
+	// Update the refresh token if the server returned another one.
+	if token.token.RefreshToken != nil && token.token.RefreshToken != "" {
+		newCfg[cfgRefreshToken] = token.token.RefreshToken
+	}
 	newCfg[cfgEnvironment] = token.environment
 	newCfg[cfgClientID] = token.clientID
 	newCfg[cfgTenantID] = token.tenantID
